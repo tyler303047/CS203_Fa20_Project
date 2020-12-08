@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <xmmintrin.h>
+# include <xmmintrin.h>
 #include <x86intrin.h>
 #include <sys/time.h>
 #include <pthread.h>
@@ -19,6 +19,7 @@ void *mythreaded_vector_blockmm(void *t);
 
 #define CHECK_X 4
 #define CHECK_Y 4
+#define BIT_ORGANIZE_VECTOR 0b11100100
 
 #define BLOCK_SIZE 64
 
@@ -96,6 +97,7 @@ void *mythreaded_vector_blockmm(void *t)
   __m256d va;
   __m256d vb;
   __m256d vc;
+  // __m256d vc_t;
   // __m256d va, vb, vc;
   // __m256d va_0, va_1, va_2, va_3;
   // __m256d vb_0, vb_1, vb_2, vb_3; 
@@ -125,31 +127,9 @@ void *mythreaded_vector_blockmm(void *t)
                 for(kk = k; kk < k+(ARRAY_SIZE/n); kk++)
 		// for(kk = k; kk < k+(ARRAY_SIZE/n); kk+=VECTOR_WIDTH)
                 {
-                        /*
-			va = _mm256_load_pd(&a[ii][kk]);
-                        vb_0 = _mm256_load_pd(&b[jj][kk]);
-			vc_0 = _mm256_mul_pd(va,vb_0);
-
-                        vb_1 = _mm256_load_pd(&b[jj+1][kk]);
-			vc_1 = _mm256_mul_pd(va,vb_1);
-
-                        vb_2 = _mm256_load_pd(&b[jj+2][kk]);
-			vc_2 = _mm256_mul_pd(va,vb_2);
-
-                        vb_3 = _mm256_load_pd(&b[jj+3][kk]);
-			vc_3 = _mm256_mul_pd(va,vb_3);
-
-			vc_0 = _mm256_permute_pd(_mm256_hadd_pd(vc_0, vc_1), 0b11011000);
-			vc_2 = _mm256_permute_pd(_mm256_hadd_pd(vc_2, vc_3), 0b11011000);
-
-			vc = _mm256_add_pd(vc, _mm256_permute_pd(_mm256_hadd_pd(vc_0, vc_2), 0b11011000));
-			*/
-
-			
-			va = _mm256_broadcast_sd(&a[ii][kk]);
+			                  va = _mm256_broadcast_sd(&a[ii][kk]);
                         vb = _mm256_load_pd(&b[kk][jj]);
                         vc = _mm256_fmadd_pd(va,vb, vc);
-			
                 }
                 _mm256_store_pd(&c[ii][jj],vc);
             }
