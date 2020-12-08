@@ -102,8 +102,6 @@ void *mythreaded_vector_blockmm(void *t)
   // __m256d va_0, va_1, va_2, va_3;
   // __m256d vb_0, vb_1, vb_2, vb_3; 
   // __m256d vc_0, vc_1, vc_2, vc_3;
-  // double *vecbuf = (double*)malloc(4 * sizeof(double));
-  double vecbuf[4];
   struct thread_info tinfo = *(struct thread_info *)t;
   int number_of_threads = tinfo.number_of_threads;
   int tid =  tinfo.tid;
@@ -129,74 +127,9 @@ void *mythreaded_vector_blockmm(void *t)
                 for(kk = k; kk < k+(ARRAY_SIZE/n); kk++)
 		// for(kk = k; kk < k+(ARRAY_SIZE/n); kk+=VECTOR_WIDTH)
                 {
-                        /*
-			va = _mm256_load_pd(&a[ii][kk]);
-                        vb_0 = _mm256_load_pd(&b[jj][kk]);
-			vc_0 = _mm256_mul_pd(va,vb_0);
-
-                        vb_1 = _mm256_load_pd(&b[jj+1][kk]);
-			vc_1 = _mm256_mul_pd(va,vb_1);
-
-                        vb_2 = _mm256_load_pd(&b[jj+2][kk]);
-			vc_2 = _mm256_mul_pd(va,vb_2);
-
-                        vb_3 = _mm256_load_pd(&b[jj+3][kk]);
-			vc_3 = _mm256_mul_pd(va,vb_3);
-
-			// vc_0 = _mm256_permute_pd(_mm256_hadd_pd(vc_0, vc_1), 0b11011000);
-			// vc_2 = _mm256_permute_pd(_mm256_hadd_pd(vc_2, vc_3), 0b11011000);
-
-			vc = _mm256_add_pd(
-						vc, 
-						_mm256_permute_pd(
-							_mm256_hadd_pd(
-								_mm256_permute_pd(
-									_mm256_hadd_pd(
-										vc_0, 
-										vc_1), 
-									BIT_ORGANIZE_VECTOR), 
-								_mm256_permute_pd(
-									_mm256_hadd_pd(
-										vc_2, 
-										vc_3), 
-									BIT_ORGANIZE_VECTOR)), 
-							BIT_ORGANIZE_VECTOR));
-			*/
-
-			// tried so many things, but the documentation for Intel's functions were severely lacvking to me, so the only change I kept was the change of iterating k and j outer loops
-			
-			va = _mm256_broadcast_sd(&a[ii][kk]);
+			                  va = _mm256_broadcast_sd(&a[ii][kk]);
                         vb = _mm256_load_pd(&b[kk][jj]);
-			vc = _mm256_add_pd(vc,_mm256_mul_pd(va,vb));
-                        // vc = (__m256d)_mm256_fmadd_pd(va,vb,vc);
-			
-			/*
-			va = _mm256_broadcast_sd(&a[ii][kk]);
-                        vb = _mm256_load_pd(&b[kk][jj]);
-                        vc = _mm256_add_pd(vc,_mm256_mul_pd(va,vb));
-
-			va = _mm256_broadcast_sd(&a[ii][kk+1]);
-                        vb = _mm256_load_pd(&b[kk+1][jj]);
-                        vc = _mm256_add_pd(vc,_mm256_mul_pd(va,vb));
-
-                        va = _mm256_broadcast_sd(&a[ii][kk+2]);
-			vb = _mm256_load_pd(&b[kk+2][jj]);
-                        vc = _mm256_add_pd(vc,_mm256_mul_pd(va,vb));
-
-			va = _mm256_broadcast_sd(&a[ii][kk+3]);
-                        vb = _mm256_load_pd(&b[kk+3][jj]);
-                        vc = _mm256_add_pd(vc,_mm256_mul_pd(va,vb));
-			*/
-			/*
-			va = _mm256_load_pd(&a[ii][kk]);
-                        vb = _mm256_load_pd(&b[jj][kk]);
-                        vc = _mm256_mul_pd(va,vb);
-			vc = _mm256_hadd_pd(vc, vc);
-			vc = _mm256_hadd_pd(vc, vc);
-			_mm256_store_pd(&vecbuf[0], vc);
-			// printf("vecbuf 1: %f\n", vecbuf[0]);
-			c[ii][jj] += vecbuf[0];
-			*/
+                        vc = _mm256_fmadd_pd(va,vb, vc);
                 }
                 _mm256_store_pd(&c[ii][jj],vc);
             }
